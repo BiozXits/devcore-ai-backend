@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
@@ -8,8 +7,17 @@ app.use(express.json());
 
 const OPENAI_KEY = process.env.OPENAI_KEY;
 
+// Test route (browser me check karne ke liye)
+app.get("/", (req, res) => {
+  res.send("Backend is running ✅");
+});
+
 app.post("/chat", async (req, res) => {
   try {
+    if (!OPENAI_KEY) {
+      return res.status(500).json({ error: "OPENAI_KEY not set" });
+    }
+
     const userMessage = req.body.message;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -28,8 +36,10 @@ app.post("/chat", async (req, res) => {
     res.json(data);
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Server Error" });
   }
 });
 
-app.listen(3000, () => console.log("Server Running"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
